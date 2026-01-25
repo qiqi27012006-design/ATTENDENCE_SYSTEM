@@ -5,7 +5,8 @@
 
 ## Frontend (Vite + React)
 ```bash
-npm install:all
+cd frontend
+npm install
 npm run dev
 
 ## Docker
