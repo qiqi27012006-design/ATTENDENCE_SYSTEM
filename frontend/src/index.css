@@ -1,0 +1,4 @@
+/* src/index.css */
+:root { font-family: system-ui, Arial, sans-serif; }
+* { box-sizing: border-box; }
+body { margin: 0; }

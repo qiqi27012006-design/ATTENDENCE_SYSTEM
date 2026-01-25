@@ -1,0 +1,126 @@
+/* Giữ kiểu tối như ảnh + form nhỏ bên trái */
+.auth-page{
+  min-height: 100vh;
+  background: #1f1f1f;
+  color: #eaeaea;
+}
+
+.auth-left{
+  padding: 24px;
+  width: 360px;       /* giống form nhỏ bên trái */
+}
+
+.auth-title{
+  margin: 0 0 14px;
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.auth-form{
+  display: grid;
+  gap: 12px;
+}
+
+.auth-label{
+  font-size: 12px;
+  color: #cfcfcf;
+  display: grid;
+  gap: 6px;
+}
+
+.auth-input{
+  width: 100%;
+  height: 38px;
+  padding: 9px 10px;
+  border-radius: 6px;
+  border: 1px solid #4a4a4a;
+  background: #262626;
+  color: #f0f0f0;
+  outline: none;
+  transition: border-color .15s ease, box-shadow .15s ease;
+}
+
+.auth-input::placeholder{
+  color: #8b8b8b;
+}
+
+.auth-input:focus{
+  border-color: #8ab4f8;
+  box-shadow: 0 0 0 3px rgba(138,180,248,.15);
+}
+
+/* Radio row */
+.auth-radio-row{
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  padding: 6px 0 2px;
+}
+
+.auth-radio{
+  font-size: 12px;
+  color: #d9d9d9;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.auth-btn{
+  height: 40px;
+  border: 1px solid #3c3c3c;
+  border-radius: 6px;
+  background: #2b2b2b;
+  color: #fff;
+  cursor: pointer;
+  font-weight: 600;
+  transition: transform .05s ease, background .15s ease, border-color .15s ease;
+}
+
+.auth-btn:hover{
+  background: #333333;
+  border-color: #4b4b4b;
+}
+
+.auth-btn:active{
+  transform: translateY(1px);
+}
+
+.auth-btn:disabled{
+  opacity: .7;
+  cursor: not-allowed;
+}
+
+.auth-msg{
+  margin-top: 2px;
+  padding: 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.auth-msg--err{
+  background: rgba(255, 99, 71, .12);
+  border: 1px solid rgba(255, 99, 71, .35);
+  color: #ffb3a7;
+}
+
+.auth-msg--ok{
+  background: rgba(50, 205, 50, .10);
+  border: 1px solid rgba(50, 205, 50, .30);
+  color: #b8f3b8;
+}
+
+.auth-foot{
+  margin-top: 4px;
+  font-size: 12px;
+  color: #cfcfcf;
+}
+
+.auth-link{
+  color: #8ab4f8;
+  text-decoration: none;
+}
+
+.auth-link:hover{
+  text-decoration: underline;
+}
