@@ -19,6 +19,7 @@ export default function StudentClassesPage() {
   const [error, setError] = useState("");
   const [classes, setClasses] = useState([]);
   const [selectedId, setSelectedId] = useState(null);
+  const [search, setSearch] = useState(""); // ⭐ thêm tìm kiếm
 
   async function load() {
     setLoading(true);
@@ -28,7 +29,6 @@ export default function StudentClassesPage() {
       const list = Array.isArray(res?.data) ? res.data : [];
       setClasses(list);
 
-      // hỗ trợ cả _id và id
       const firstId = list?.[0]?._id ?? list?.[0]?.id ?? null;
       setSelectedId((prev) => prev ?? firstId);
     } catch (e) {
@@ -42,18 +42,35 @@ export default function StudentClassesPage() {
     load();
   }, []);
 
+  // ===== SEARCH FILTER (không dấu) =====
+  const normalize = (s) =>
+    s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
+  const filteredClasses = useMemo(() => {
+    if (!search.trim()) return classes;
+
+    const q = normalize(search);
+
+    return classes.filter((c) =>
+      normalize(
+        `${c.subjectName} ${c.subjectCode} ${c.teacherName || ""} ${c.dayOfWeek} ${c.period}`
+      ).includes(q)
+    );
+  }, [classes, search]);
+
+  // ===== MAP BY DAY + PERIOD =====
   const byDayPeriod = useMemo(() => {
     const m = new Map();
-    for (const c of classes) {
+    for (const c of filteredClasses) {
       const id = c._id ?? c.id;
       m.set(`${c.dayOfWeek}_${Number(c.period)}`, { ...c, _id: id });
     }
     return m;
-  }, [classes]);
+  }, [filteredClasses]);
 
   const selectedClass = useMemo(() => {
-    return classes.find((c) => (c._id ?? c.id) === selectedId) || null;
-  }, [classes, selectedId]);
+    return filteredClasses.find((c) => (c._id ?? c.id) === selectedId) || null;
+  }, [filteredClasses, selectedId]);
 
   function openSessions(c) {
     const id = c._id ?? c.id;
@@ -72,11 +89,21 @@ export default function StudentClassesPage() {
     <div style={page}>
       <div style={header}>
         <div>
-          <div style={{ fontWeight: 900, fontSize: 18, color: "#fff" }}>/student/classes</div>
+          <div style={{ fontWeight: 900, fontSize: 18, color: "#fff" }}>
+            /student/classes
+          </div>
           <div style={{ marginTop: 6, color: "#bbb" }}>Lịch học tuần</div>
         </div>
 
         <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+          {/* SEARCH BOX */}
+          <input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Tìm môn, mã môn, giảng viên, thứ, ca..."
+            style={searchBox}
+          />
+
           <button type="button" onClick={goProfile} style={btnGhost}>
             Profile
           </button>
@@ -114,7 +141,10 @@ export default function StudentClassesPage() {
                         key={p}
                         style={{
                           ...classSlot,
-                          outline: selectedId === id ? "2px solid rgba(120,120,255,0.55)" : "none",
+                          outline:
+                            selectedId === id
+                              ? "2px solid rgba(120,120,255,0.55)"
+                              : "none",
                         }}
                         onClick={() => setSelectedId(id)}
                         role="button"
@@ -123,17 +153,34 @@ export default function StudentClassesPage() {
                         <div style={{ fontWeight: 900 }}>
                           Ca {p}: {c.subjectName} - {c.subjectCode}
                         </div>
-                        <div style={{ marginTop: 6, opacity: 0.85 }}>Giảng viên: {c.teacherName || "—"}</div>
+                        <div style={{ marginTop: 6, opacity: 0.85 }}>
+                          Giảng viên: {c.teacherName || "—"}
+                        </div>
 
-                        <div style={{ marginTop: 10, display: "flex", gap: 10, flexWrap: "wrap" }}>
+                        <div
+                          style={{
+                            marginTop: 10,
+                            display: "flex",
+                            gap: 10,
+                            flexWrap: "wrap",
+                          }}
+                        >
                           <button
                             type="button"
                             style={linkBtn}
-                            onClick={(e) => (e.stopPropagation(), openSessions(c))}
+                            onClick={(e) => (
+                              e.stopPropagation(), openSessions(c)
+                            )}
                           >
                             Tham gia lớp
                           </button>
-                          <button type="button" style={linkBtn} onClick={(e) => (e.stopPropagation(), openLeave(c))}>
+                          <button
+                            type="button"
+                            style={linkBtn}
+                            onClick={(e) => (
+                              e.stopPropagation(), openLeave(c)
+                            )}
+                          >
                             Xin vắng
                           </button>
                         </div>
@@ -150,34 +197,56 @@ export default function StudentClassesPage() {
           <div style={panel}>
             <div style={{ fontWeight: 900, fontSize: 16 }}>Chi tiết lớp</div>
             {!selectedClass ? (
-              <div style={{ marginTop: 10, color: "#bbb" }}>Chọn một lớp ở TKB bên trái.</div>
+              <div style={{ marginTop: 10, color: "#bbb" }}>
+                Chọn một lớp ở TKB bên trái.
+              </div>
             ) : (
               <>
                 <div style={{ marginTop: 14 }}>
                   <div style={kvLabel}>Môn học</div>
                   <div style={kvValue}>
-                    {selectedClass.subjectName} - {selectedClass.subjectCode}
+                    {selectedClass.subjectName} -{" "}
+                    {selectedClass.subjectCode}
                   </div>
                 </div>
 
                 <div style={{ marginTop: 12 }}>
                   <div style={kvLabel}>Giảng viên</div>
-                  <div style={kvValue}>{selectedClass.teacherName || "—"}</div>
+                  <div style={kvValue}>
+                    {selectedClass.teacherName || "—"}
+                  </div>
                 </div>
 
                 <div style={{ marginTop: 12 }}>
                   <div style={kvLabel}>Lịch</div>
                   <div style={kvValue}>
-                    {DAYS.find((x) => x.value === selectedClass.dayOfWeek)?.label || selectedClass.dayOfWeek} — Ca{" "}
-                    {selectedClass.period}
+                    {DAYS.find(
+                      (x) => x.value === selectedClass.dayOfWeek
+                    )?.label || selectedClass.dayOfWeek}{" "}
+                    — Ca {selectedClass.period}
                   </div>
                 </div>
 
-                <div style={{ marginTop: 16, display: "flex", gap: 10, flexWrap: "wrap" }}>
-                  <button type="button" style={btnPrimary} onClick={() => openSessions(selectedClass)}>
+                <div
+                  style={{
+                    marginTop: 16,
+                    display: "flex",
+                    gap: 10,
+                    flexWrap: "wrap",
+                  }}
+                >
+                  <button
+                    type="button"
+                    style={btnPrimary}
+                    onClick={() => openSessions(selectedClass)}
+                  >
                     Vào buổi điểm danh
                   </button>
-                  <button type="button" style={btnGhost} onClick={() => openLeave(selectedClass)}>
+                  <button
+                    type="button"
+                    style={btnGhost}
+                    onClick={() => openLeave(selectedClass)}
+                  >
                     Tạo đơn xin vắng
                   </button>
                 </div>
@@ -189,6 +258,8 @@ export default function StudentClassesPage() {
     </div>
   );
 }
+
+/* ================= STYLES ================= */
 
 const page = { minHeight: "100vh", background: "#222", color: "#eee", padding: 18 };
 const header = {
@@ -267,4 +338,15 @@ const toastErr = {
   background: "rgba(255,0,0,0.06)",
   color: "#ffb3b3",
   fontWeight: 800,
+};
+
+const searchBox = {
+  padding: "10px 12px",
+  borderRadius: 10,
+  border: "1px solid rgba(255,255,255,0.12)",
+  background: "#111",
+  color: "#fff",
+  outline: "none",
+  minWidth: 260,
+  fontWeight: 700,
 };
